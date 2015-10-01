@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/nifi-putwebhdfs-bundle.iml" filepath="$PROJECT_DIR$/nifi-putwebhdfs-bundle.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nifi-putwebhdfs-nar/nifi-putwebhdfs-nar.iml" filepath="$PROJECT_DIR$/nifi-putwebhdfs-nar/nifi-putwebhdfs-nar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nifi-putwebhdfs-processors/nifi-putwebhdfs-processors.iml" filepath="$PROJECT_DIR$/nifi-putwebhdfs-processors/nifi-putwebhdfs-processors.iml" />
+    </modules>
+  </component>
+</project>
