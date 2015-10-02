@@ -132,7 +132,6 @@ public class PutWebHDFS extends AbstractProcessor {
         // Variables
         final ProcessorLog log = this.getLogger();
         final String flowFileFileName = flowFile.getAttribute(CoreAttributes.FILENAME.key());
-        final boolean success = false;
         StringBuilder sb = new StringBuilder();
         sb.append(webHdfsUrl);
         sb.append("/");
@@ -162,7 +161,7 @@ public class PutWebHDFS extends AbstractProcessor {
 
             // Exception encounter, transfer to the failure relationship
             log.info("NIFI: Success! Transferring to the success relationship.");
-            session.transfer(flowFile, REL_FAILURE);
+            session.transfer(flowFile, REL_SUCCESS);
 
         } catch (UnirestException e) {
             // Exception encounter, transfer to the failure relationship
