@@ -45,6 +45,7 @@ import java.util.*;
 
 public class PutWebhdfs extends AbstractProcessor {
 
+    // Variables set via init
     private String webHdfsUrl;
     private String webHdfsUser;
 
@@ -70,6 +71,8 @@ public class PutWebhdfs extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+
+
     // Releationships for this Processor
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
             .name("success")
@@ -81,8 +84,8 @@ public class PutWebhdfs extends AbstractProcessor {
             .description("Files that could not be written to HDFS via WebHDFS are transferred to this relationship")
             .build();
 
-    private List<PropertyDescriptor> descriptors;
 
+    private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
     @Override
@@ -91,7 +94,7 @@ public class PutWebhdfs extends AbstractProcessor {
         descriptors.add(WEBHDFS_BASE_URL);
         descriptors.add(WEBHDFS_USER);
         descriptors.add(WEBHDFS_OUTPUT_DIRECTORY);
-        this.descriptors = Collections.unmodifiableList(descriptors);
+        this.properties = Collections.unmodifiableList(descriptors);
 
         final Set<Relationship> relationships = new HashSet<Relationship>();
         relationships.add(REL_SUCCESS);
@@ -106,7 +109,7 @@ public class PutWebhdfs extends AbstractProcessor {
 
     @Override
     public final List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return descriptors;
+        return properties;
     }
 
     @OnScheduled
@@ -130,8 +133,14 @@ public class PutWebhdfs extends AbstractProcessor {
 			return;
 		}
 
+        // Variables
         final ProcessorLog log = this.getLogger();
         final String flowFileFileName = flowFile.getAttribute(CoreAttributes.FILENAME.key());
+        StringBuilder sb = new StringBuilder();
+        sb.append(webHdfsUrl);
+        sb.append("/");
+        sb.append(flowFileFileName);
+        final String fullUrlWithFlowFile = sb.toString();
 
         // Read the FlowFile
         session.read(flowFile, new InputStreamCallback() {
@@ -146,36 +155,26 @@ public class PutWebhdfs extends AbstractProcessor {
                 queryStrings.put("user.name", webHdfsUser);
                 queryStrings.put("op", "homedir");
 
-                log.info("NIFI: Full URL with File: " + webHdfsUrl + "/" + flowFileFileName);
-
                 try {
-                    // Make the request
-                    HttpRequestWithBody request = Unirest.put(webHdfsUrl + "/" + flowFileFileName);
-                    request.queryString(queryStrings);
-                    request.body(inputContent);
+                    // Make the request and succeed if not exception - VERY BAD IDEA AGAIN, CHECK REPONSE AT LEAST!
+                    Unirest.put(fullUrlWithFlowFile)
+                            .queryString(queryStrings)
+                            .body(inputContent)
+                            .asString();
 
-                    log.info("NIFI: Request URL: " + request.getUrl());
-                    log.info("NIFI: Request Body: " + request.getBody().toString());
-
-                    request.asString();
-
+                    // No exception throw, transfer to the success relationship
                     log.info("NIFI: Success! Transfering to the success relationship.");
                     session.transfer(flowFile, REL_SUCCESS);
+
                 } catch (UnirestException e) {
+
+                    // Exception encounter, transfer to the failure relationship
                     log.info("NIFI: Failure! Transfering to the failure relationship.");
                     log.error(e.getLocalizedMessage());
                     session.transfer(flowFile, REL_FAILURE);
                 }
             }
         });
-    }
-
-    private void setWebHdfsUrl(String webHdfsUrl) {
-        this.webHdfsUrl = webHdfsUrl;
-    }
-
-    private String getWebHdfsUrl() {
-        return webHdfsUrl;
     }
 
 }

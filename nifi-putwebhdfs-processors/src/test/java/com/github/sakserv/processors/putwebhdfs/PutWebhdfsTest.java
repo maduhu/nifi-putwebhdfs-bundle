@@ -76,16 +76,21 @@ public class PutWebhdfsTest {
     @Test
     public void testProcessor() {
 
+        // Get the test content
         InputStream content = new ByteArrayInputStream(TEST_DATA.getBytes());
 
+        // Setup the test properties for the Processor
         testRunner.setProperty(PutWebhdfs.WEBHDFS_BASE_URL, TEST_BASE_URL);
         testRunner.setProperty(PutWebhdfs.WEBHDFS_OUTPUT_DIRECTORY, TEST_OUTPUT_DIRECTORY);
         testRunner.setProperty(PutWebhdfs.WEBHDFS_USER, TEST_USER);
 
+        // Enqueue the content for processing
         testRunner.enqueue(content);
 
+        // Run the Mock Processor, telling it to expect 1 FlowFile input
         testRunner.run(1);
 
+        // Assert that the FlowFile was processed and removed from the queue
         testRunner.assertQueueEmpty();
 
     }
