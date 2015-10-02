@@ -29,7 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 
-public class PutWebhdfsTest {
+public class PutWebHDFSTest {
 
     private TestRunner testRunner;
 
@@ -70,7 +70,7 @@ public class PutWebhdfsTest {
 
     @Before
     public void init() {
-        testRunner = TestRunners.newTestRunner(PutWebhdfs.class);
+        testRunner = TestRunners.newTestRunner(PutWebHDFS.class);
     }
 
     @Test
@@ -80,9 +80,9 @@ public class PutWebhdfsTest {
         InputStream content = new ByteArrayInputStream(TEST_DATA.getBytes());
 
         // Setup the test properties for the Processor
-        testRunner.setProperty(PutWebhdfs.WEBHDFS_BASE_URL, TEST_BASE_URL);
-        testRunner.setProperty(PutWebhdfs.WEBHDFS_OUTPUT_DIRECTORY, TEST_OUTPUT_DIRECTORY);
-        testRunner.setProperty(PutWebhdfs.WEBHDFS_USER, TEST_USER);
+        testRunner.setProperty(PutWebHDFS.WEBHDFS_BASE_URL, TEST_BASE_URL);
+        testRunner.setProperty(PutWebHDFS.WEBHDFS_OUTPUT_DIRECTORY, TEST_OUTPUT_DIRECTORY);
+        testRunner.setProperty(PutWebHDFS.WEBHDFS_USER, TEST_USER);
 
         // Enqueue the content for processing
         testRunner.enqueue(content);

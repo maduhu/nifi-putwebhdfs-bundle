@@ -41,9 +41,9 @@ import java.util.*;
 @Tags({"hdfs", "hadoop", "put", "http"})
 
 // The Capability Description is a short description for display in the UI
-@CapabilityDescription("Provide a description")
+@CapabilityDescription("Writes FlowFiles to HDFS using WebHDFS")
 
-public class PutWebhdfs extends AbstractProcessor {
+public class PutWebHDFS extends AbstractProcessor {
 
     // Variables set via init
     private String webHdfsUrl;
