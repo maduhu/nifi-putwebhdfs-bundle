@@ -56,11 +56,6 @@
             <version>1.4.7</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.sakserv</groupId>
             <artifactId>hadoop-mini-clusters</artifactId>
             <version>0.0.16-SNAPSHOT</version>
