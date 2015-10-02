@@ -16,14 +16,12 @@
  */
 package com.github.sakserv.processors.putwebhdfs;
 
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequestWithBody;
+import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
-import org.apache.commons.io.IOUtils;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
@@ -32,6 +30,7 @@ import org.apache.nifi.processor.*;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.InputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
+import org.apache.nifi.stream.io.StreamUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,8 +69,6 @@ public class PutWebHDFS extends AbstractProcessor {
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
-
-
 
     // Releationships for this Processor
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -136,6 +133,7 @@ public class PutWebHDFS extends AbstractProcessor {
         // Variables
         final ProcessorLog log = this.getLogger();
         final String flowFileFileName = flowFile.getAttribute(CoreAttributes.FILENAME.key());
+        final boolean success = false;
         StringBuilder sb = new StringBuilder();
         sb.append(webHdfsUrl);
         sb.append("/");
@@ -143,38 +141,36 @@ public class PutWebHDFS extends AbstractProcessor {
         final String fullUrlWithFlowFile = sb.toString();
 
         // Read the FlowFile
+        final byte[] messageContent = new byte[(int) flowFile.getSize()];
         session.read(flowFile, new InputStreamCallback() {
             @Override
             public void process(InputStream inputStream) throws IOException {
-
-                // Read the content into a string - VERY BAD IDEA!!!
-                String inputContent = IOUtils.toString(inputStream);
-
-                // Setup the query strings for the request
-                Map<String, Object> queryStrings = new HashMap<String, Object>();
-                queryStrings.put("user.name", webHdfsUser);
-                queryStrings.put("op", "homedir");
-
-                try {
-                    // Make the request and succeed if not exception - VERY BAD IDEA AGAIN, CHECK REPONSE AT LEAST!
-                    Unirest.put(fullUrlWithFlowFile)
-                            .queryString(queryStrings)
-                            .body(inputContent)
-                            .asString();
-
-                    // No exception throw, transfer to the success relationship
-                    log.info("NIFI: Success! Transfering to the success relationship.");
-                    session.transfer(flowFile, REL_SUCCESS);
-
-                } catch (UnirestException e) {
-
-                    // Exception encounter, transfer to the failure relationship
-                    log.info("NIFI: Failure! Transfering to the failure relationship.");
-                    log.error(e.getLocalizedMessage());
-                    session.transfer(flowFile, REL_FAILURE);
-                }
+                StreamUtils.fillBuffer(inputStream, messageContent, true);
             }
         });
+
+        // Setup the query strings for the request
+        Map<String, Object> queryStrings = new HashMap<String, Object>();
+        queryStrings.put("user.name", webHdfsUser);
+        queryStrings.put("op", "homedir");
+
+        try {
+            // Make the request and succeed if not exception - VERY BAD IDEA AGAIN, CHECK REPONSE AT LEAST FFS!
+            Unirest.put(fullUrlWithFlowFile)
+                    .queryString(queryStrings)
+                    .body(messageContent)
+                    .asString();
+
+            // Exception encounter, transfer to the failure relationship
+            log.info("NIFI: Success! Transferring to the success relationship.");
+            session.transfer(flowFile, REL_FAILURE);
+
+        } catch (UnirestException e) {
+            // Exception encounter, transfer to the failure relationship
+            log.info("NIFI: Failure! Transferring to the failure relationship.");
+            log.error(e.getLocalizedMessage());
+            session.transfer(flowFile, REL_FAILURE);
+        }
     }
 
 }
